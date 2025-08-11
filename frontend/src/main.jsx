@@ -5,6 +5,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import App from './App.jsx';
 import AuthProvider from './context/AuthProvider.jsx'; // ✅ no curly braces
 
+
 const theme = createTheme({
   palette: {
     mode: 'light',

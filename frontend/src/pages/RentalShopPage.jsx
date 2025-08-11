@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -41,6 +42,7 @@ const RentalShopPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [view, setView] = useState("grid");
+  const navigate = useNavigate()
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -135,7 +137,7 @@ const RentalShopPage = () => {
                 md={3}
                 sx={view === "list" ? { flexBasis: "100%" } : {}}
               >
-                <Card sx={{ display: view === "list" ? "flex" : "block" }}>
+                <Card sx={{ display: view === "list" ? "flex" : "block" }} onClick={()=>navigate("/product-page")}>
                   <CardMedia
                     component="img"
                     height={view === "list" ? "100" : "140"}
@@ -143,7 +145,7 @@ const RentalShopPage = () => {
                     alt={product.name}
                     sx={view === "list" ? { width: 140 } : {}}
                   />
-                  <Box sx={{ flexGrow: 1 }}>
+                  <Box sx={{ flexGrow: 1 }} >
                     <CardContent>
                       <Typography variant="subtitle1">
                         {product.name}
