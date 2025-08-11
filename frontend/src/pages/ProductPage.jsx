@@ -26,6 +26,46 @@ const ProductPage = () => {
   const [toDate, setToDate] = useState("");
   const [priceOption, setPriceOption] = useState("default");
   const [coupon, setCoupon] = useState("");
+  const handleAddToCart = async () => {
+  if (!fromDate || !toDate) {
+    alert("Please select rental start and end dates.");
+    return;
+  }
+  if (new Date(fromDate) > new Date(toDate)) {
+    alert("End date must be after start date.");
+    return;
+  }
+
+  try {
+    const pricePerUnit = product.pricePerDay; // or calculate based on priceOption
+    // TODO: Calculate discount based on coupon if needed
+
+    const payload = {
+      product: product._id,
+      quantity,
+      rentStart: fromDate,
+      rentEnd: toDate,
+      pricePerUnit,
+      appliedCoupon: coupon ? { code: coupon, discount: 0, discountType: "fixed" } : null,
+    };
+
+    const token = localStorage.getItem("token"); // or however you store auth token
+
+    const response = await axios.post(
+      "http://localhost:5000/api/cart/add",
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    console.log(response.data.message);
+    alert("Added to cart!");
+
+  } catch (error) {
+    console.error("Failed to add to cart:", error);
+    alert("Failed to add to cart.");
+  }
+};
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -159,7 +199,7 @@ const ProductPage = () => {
             <Button
               variant="contained"
               startIcon={<ShoppingCart />}
-              onClick={() => console.log("Added to cart")}
+              onClick={handleAddToCart}
             >
               Add to Cart
             </Button>

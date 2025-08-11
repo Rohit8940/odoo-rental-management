@@ -3,12 +3,14 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authMiddleware from './middleware/authMiddleware.js';
 
 import authRoutes from './routes/authRoutes.js';
 // import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 // import orderRoutes from './routes/orderRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import { addToCart } from './controllers/cartController.js';
 
 dotenv.config();
 const app = express();
@@ -22,6 +24,7 @@ app.use('/api/auth', authRoutes);        // Signup/Login
 app.use('/api/products', productRoutes); // Insert/View products
 // app.use('/api/orders', orderRoutes);     // Insert/View orders
 app.use('/api/payments', paymentRoutes); // Insert/View payments
+app.post('/api/cart/add', authMiddleware, addToCart);
 
 // MongoDB connect
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
