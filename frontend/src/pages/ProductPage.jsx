@@ -1,5 +1,5 @@
 // src/pages/ProductPage.jsx
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -10,17 +10,58 @@ import {
   Link,
   MenuItem,
   Select,
+  CircularProgress,
 } from "@mui/material";
 import { ShoppingCart, FavoriteBorder } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 
 const ProductPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // get product id from url params
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [priceOption, setPriceOption] = useState("default");
   const [coupon, setCoupon] = useState("");
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:5000/api/products/${id}`);
+        setProduct(response.data);
+      } catch (error) {
+        console.error("Failed to fetch product:", error);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Box p={3} textAlign="center">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!product) {
+    return (
+      <Box p={3} textAlign="center">
+        <Typography variant="h6">Product not found.</Typography>
+        <Button onClick={() => navigate("/rental-shop")} sx={{ mt: 2 }}>
+          Back to Shop
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box p={3}>
@@ -34,12 +75,12 @@ const ProductPage = () => {
         >
           All Products
         </Link>
-        <Typography color="text.primary">Product Name</Typography>
+        <Typography color="text.primary">{product.name}</Typography>
       </Breadcrumbs>
 
-      <Box display="flex" gap={4}>
+      <Box display="flex" gap={4} flexWrap="wrap">
         {/* Left side: Product image & wishlist */}
-        <Box flex={1} display="flex" flexDirection="column" alignItems="center">
+        <Box flex={1} display="flex" flexDirection="column" alignItems="center" minWidth={250}>
           <Box
             sx={{
               width: 200,
@@ -49,9 +90,14 @@ const ProductPage = () => {
               alignItems: "center",
               justifyContent: "center",
               borderRadius: 2,
+              overflow: "hidden",
             }}
           >
-            📦 {/* Replace with <img src="..." alt="Product" /> */}
+            <img
+              src={product.imageUrl || "https://via.placeholder.com/200"}
+              alt={product.name}
+              style={{ maxWidth: "100%", maxHeight: "100%" }}
+            />
           </Box>
           <Button
             variant="outlined"
@@ -62,23 +108,27 @@ const ProductPage = () => {
             Add to Wishlist
           </Button>
           <Typography variant="body2" sx={{ mt: 2 }}>
-            Product descriptions...
+            {product.description || "No description available."}
           </Typography>
-          <Link sx={{ mt: 1, cursor: "pointer" }}>Read More</Link>
+          <Link sx={{ mt: 1, cursor: "pointer" }} onClick={() => alert("More details coming soon!")}>
+            Read More
+          </Link>
         </Box>
 
         {/* Right side: Product details */}
-        <Box flex={2}>
-          <Typography variant="h5">Product Name</Typography>
+        <Box flex={2} minWidth={300}>
+          <Typography variant="h5" gutterBottom>
+            {product.name}
+          </Typography>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            ₹1000{" "}
+            ₹{product.pricePerDay.toFixed(2)}{" "}
             <Typography variant="body2" component="span">
-              (₹500 / per unit)
+              (per day)
             </Typography>
           </Typography>
 
           {/* Date range using plain date inputs */}
-          <Box display="flex" alignItems="center" gap={2} mb={2}>
+          <Box display="flex" alignItems="center" gap={2} mb={2} flexWrap="wrap">
             <Typography>From:</Typography>
             <TextField
               type="date"
@@ -96,7 +146,7 @@ const ProductPage = () => {
           </Box>
 
           {/* Quantity & Add to Cart */}
-          <Box display="flex" alignItems="center" gap={2} mb={2}>
+          <Box display="flex" alignItems="center" gap={2} mb={2} flexWrap="wrap">
             <Button variant="outlined" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
               -
             </Button>
@@ -116,7 +166,7 @@ const ProductPage = () => {
 
           {/* Price List Dropdown */}
           <Box mb={2}>
-            <Select value={priceOption} onChange={(e) => setPriceOption(e.target.value)}>
+            <Select value={priceOption} onChange={(e) => setPriceOption(e.target.value)} size="small">
               <MenuItem value="default">Price List</MenuItem>
               <MenuItem value="weekly">Weekly Rate</MenuItem>
               <MenuItem value="monthly">Monthly Rate</MenuItem>
@@ -124,7 +174,7 @@ const ProductPage = () => {
           </Box>
 
           {/* Coupon */}
-          <Box display="flex" alignItems="center" gap={1} mb={2}>
+          <Box display="flex" alignItems="center" gap={1} mb={2} flexWrap="wrap">
             <TextField
               placeholder="Coupon Code"
               value={coupon}
@@ -139,11 +189,12 @@ const ProductPage = () => {
           {/* Terms & Conditions */}
           <Typography variant="subtitle1">Terms & Conditions</Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            ...
+            Please read the rental terms carefully before booking.
           </Typography>
 
           {/* Share */}
           <Typography variant="subtitle1">Share:</Typography>
+          {/* Add social share buttons here if needed */}
         </Box>
       </Box>
     </Box>

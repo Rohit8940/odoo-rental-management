@@ -6,6 +6,9 @@ import RentalShopPage from "./pages/RentalShopPage";
 import { useAuth } from "./context/AuthProvider";
 import RentalList from "./pages/RentalList";
 import ProductPage from "./pages/ProductPage";
+import ReviewOrder from "./pages/ReviewOrder";
+import DeliveryPage from "./pages/DeliveryPage";
+import PaymentPage from "./pages/PaymentPage";
 
 export default function App() {
   const { user } = useAuth();
@@ -42,10 +45,40 @@ export default function App() {
         }
       />
       <Route
-        path="/product-page"
+        path="/product-page/:id"
         element={
           user?.role === "customer" ? (
             <ProductPage/>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/review-order"
+        element={
+          user?.role === "customer" ? (
+            <ReviewOrder/>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/delivery"
+        element={
+          user?.role === "customer" ? (
+            <DeliveryPage/>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/payment"
+        element={
+          user?.role === "customer" ? (
+            <PaymentPage/>
           ) : (
             <Navigate to="/login" replace />
           )
