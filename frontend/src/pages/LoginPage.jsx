@@ -15,7 +15,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post("/api/auth/login", { email, password, role });
+      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password, role });
       login(res.data.user); // store user data in context
     } catch (err) {
       console.error(err);

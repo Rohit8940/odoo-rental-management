@@ -23,7 +23,7 @@ const SignupPage = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("/api/auth/signup", {
+      const res = await axios.post("http://localhost:5000/api/auth/signup", {
         email,
         name,
         phone,
