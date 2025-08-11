@@ -4,20 +4,23 @@ import User from '../models/User.js';
 
 // Signup
 export const signup = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone, role } = req.body;  // include phone and role
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
+
+    // Include phone and role when creating user
+    const user = new User({ name, email, password: hashedPassword, phone, role });
     await user.save();
 
-    res.status(201).json({ message: 'User created successfully' });
+    res.status(201).json({ message: 'User created successfully', user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Login
 export const login = async (req, res) => {
