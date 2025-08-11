@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import App from './App.jsx';
-import { AuthProvider } from './'; // adjust the path
+import  AuthProvider  from './context/AuthProvider.jsx'; // adjust the path
 
 // basic light theme
 const theme = createTheme({
