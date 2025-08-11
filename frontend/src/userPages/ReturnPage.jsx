@@ -21,23 +21,6 @@ import {
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
-// Mock rental orders with products
-const rentalOrders = [
-  {
-    id: "ORD001",
-    customerName: "John Doe",
-    products: [
-      { id: 1, name: "Camera", quantity: 2 },
-      { id: 2, name: "Tripod", quantity: 1 },
-    ],
-  },
-  {
-    id: "ORD002",
-    customerName: "Jane Smith",
-    products: [{ id: 3, name: "Lighting Kit", quantity: 1 }],
-  },
-];
-
 const productConditions = ["Good", "Damaged", "Lost"];
 
 export default function ReturnPage() {
