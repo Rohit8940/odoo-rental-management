@@ -31,6 +31,7 @@ const ProductPage = () => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
+        console.log(id);
         const response = await axios.get(`http://localhost:5000/api/products/${id}`);
         setProduct(response.data);
       } catch (error) {

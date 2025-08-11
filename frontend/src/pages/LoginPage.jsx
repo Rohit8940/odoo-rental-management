@@ -1,4 +1,3 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { Box, Button, TextField, Typography, Link } from "@mui/material";
 import RoleSelector from "../components/RoleSelector";
@@ -19,9 +18,8 @@ const LoginPage = () => {
     try {
       setLoading(true);
       const res = await axios.post("http://localhost:5000/api/auth/login", { email, password, role });
-      login(res.data.user); // Save user in context
-      console.log(res.data.user);
-      if (res.data.user.role == "customer") {
+      login(res.data.user); // Save user in context and localStorage
+      if (res.data.user.role === "customer") {
         navigate("/rental-shop");
       } else {
         alert("Access denied: Only customers can enter the rental shop.");

@@ -7,6 +7,7 @@ import {
   Typography,
   Link
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import RoleSelector from "../components/RoleSelector";
 import { useAuth } from "../context/AuthProvider";
 import axios from "axios";
@@ -42,7 +43,7 @@ const SignupPage = () => {
         role,
       });
 
-      login(res.data.user); // Store user data in context
+      login(res.data.user); // Store user data in context and localStorage
 
       // Redirect based on role
       if (res.data.user.role === "customer") {
@@ -118,7 +119,9 @@ const SignupPage = () => {
         </Button>
       </form>
       <Box mt={2}>
-        <Link href="/login">Already have an account? Login</Link>
+        <Link component={RouterLink} to="/login">
+          Already have an account? Login
+        </Link>
       </Box>
     </Box>
   );
