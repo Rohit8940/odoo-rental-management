@@ -99,7 +99,6 @@ export default function Transfer() {
                 <Select
                   labelId="from-location-label"
                   value={selectedFromLocation}
-                  label="From Location"
                   onChange={(e) => setSelectedFromLocation(e.target.value)}
                 >
                   {locationsList.map((location) => (

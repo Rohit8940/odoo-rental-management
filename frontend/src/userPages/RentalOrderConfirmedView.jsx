@@ -2,18 +2,6 @@ import React from "react";
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Divider } from "@mui/material";
 
 export default function RentalOrderConfirmedView({ order }) {
-  // order prop expected shape example:
-  // {
-  //   customer: { fullName, address, city, postalCode, phone },
-  //   rentalStartDate: "2025-08-10",
-  //   rentalEndDate: "2025-08-15",
-  //   products: [
-  //     { id: 1, name: "Camera", quantity: 2, pricePerDay: 50 },
-  //     { id: 2, name: "Tripod", quantity: 1, pricePerDay: 30 }
-  //   ],
-  //   totalDays: 6,
-  //   payment: { cardName: "John Doe", cardNumber: "4111111111111111" }
-  // }
 
   if (!order) {
     return (

@@ -11,15 +11,6 @@ import {
 
 const rentalOrders = [
   {
-    id: "ORD001",
-    customerName: "John Doe",
-    rentalStartDate: "2025-08-10",
-    rentalEndDate: "2025-08-15",
-    totalDays: 6,
-    totalPrice: 660,
-    status: "Confirmed",
-  },
-  {
     id: "ORD002",
     customerName: "Jane Smith",
     rentalStartDate: "2025-08-12",
