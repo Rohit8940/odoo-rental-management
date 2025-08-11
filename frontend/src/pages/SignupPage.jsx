@@ -1,11 +1,21 @@
+// src/pages/SignupPage.jsx
 import React, { useState } from "react";
-import { Box, Button, TextField, Typography, Link } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Link
+} from "@mui/material";
 import RoleSelector from "../components/RoleSelector";
 import { useAuth } from "../context/AuthProvider";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -16,6 +26,7 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
@@ -30,7 +41,15 @@ const SignupPage = () => {
         password,
         role,
       });
-      login(res.data.user); // store user data in context
+
+      login(res.data.user); // Store user data in context
+
+      // Redirect based on role
+      if (res.data.user.role === "customer") {
+        navigate("/rental-shop");
+      } else {
+        navigate("/dashboard"); // for shop owners/admins
+      }
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Signup failed");
@@ -41,15 +60,60 @@ const SignupPage = () => {
 
   return (
     <Box maxWidth={400} mx="auto" mt={5}>
-      <Typography variant="h5" mb={2}>Sign Up</Typography>
+      <Typography variant="h5" mb={2}>
+        Sign Up
+      </Typography>
       <form onSubmit={handleSubmit}>
         <RoleSelector role={role} setRole={setRole} />
-        <TextField label="Email" fullWidth margin="normal" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <TextField label="Name" fullWidth margin="normal" value={name} onChange={(e) => setName(e.target.value)} />
-        <TextField label="Phone" fullWidth margin="normal" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <TextField label="Password" type="password" fullWidth margin="normal" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <TextField label="Confirm Password" type="password" fullWidth margin="normal" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-        <Button variant="contained" type="submit" fullWidth disabled={loading}>
+        <TextField
+          label="Email"
+          fullWidth
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <TextField
+          label="Name"
+          fullWidth
+          margin="normal"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <TextField
+          label="Phone"
+          fullWidth
+          margin="normal"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+        />
+        <TextField
+          label="Password"
+          type="password"
+          fullWidth
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <TextField
+          label="Confirm Password"
+          type="password"
+          fullWidth
+          margin="normal"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
+        <Button
+          variant="contained"
+          type="submit"
+          fullWidth
+          disabled={loading}
+          sx={{ mt: 2 }}
+        >
           {loading ? "Registering..." : "Register"}
         </Button>
       </form>

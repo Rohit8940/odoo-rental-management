@@ -6,7 +6,7 @@ const RoleSelector = ({ role, setRole }) => {
     <FormControl fullWidth>
       <InputLabel>Role</InputLabel>
       <Select value={role} onChange={(e) => setRole(e.target.value)}>
-        <MenuItem value="customer">Customer</MenuItem>
+        <MenuItem value="customer">customer</MenuItem>
         <MenuItem value="enduser">End User</MenuItem>
       </Select>
     </FormControl>
