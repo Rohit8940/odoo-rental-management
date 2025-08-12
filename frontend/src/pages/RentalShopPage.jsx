@@ -46,7 +46,7 @@ const colors = ["Red", "Blue", "Green", "Black", "White", "Multi"];
 
 const RentalShopPage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md")); // Changed from 'sm' to 'md'
   const [view, setView] = useState("grid");
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -60,6 +60,18 @@ const RentalShopPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 6;
   const navigate = useNavigate();
+    const handleLogout = () => {
+  // Remove token from localStorage
+  localStorage.removeItem("token");
+  
+  
+  // Redirect to login page
+  window.location.href = "/login";
+  
+  // Alternative: if using React Router
+  // navigate("/login");
+};
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -156,7 +168,7 @@ const RentalShopPage = () => {
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const FilterSidebar = () => (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, minWidth: 250 }}> {/* Added minWidth */}
       <Typography variant="h6" gutterBottom>
         Filters
       </Typography>
@@ -230,10 +242,12 @@ const RentalShopPage = () => {
             Rental Shop
           </Typography>
           <Stack direction="row" spacing={1}>
-            <Button color="inherit">Home</Button>
+            {/* <Button color="inherit">Home</Button> */}
             <Button color="inherit" variant="text">Rental Shop</Button>
+            
             <Button color="inherit">Wishlist</Button>
             <Button color="inherit">Contact</Button>
+            <Button color="inherit" variant="text" onClick={handleLogout}>Logout</Button>
             <IconButton color="inherit" onClick={() => navigate("/review-order")}>
               <Badge badgeContent={cartItemsCount} color="primary">
                 <ShoppingCart />
@@ -244,27 +258,48 @@ const RentalShopPage = () => {
       </AppBar>
 
       <Box sx={{ p: isMobile ? 1 : 3 }}>
-        <Box sx={{ display: "flex", gap: 1, overflowX: "auto", py: 2, px: 1 }}>
-          {categories.map((cat) => (
-            <Chip
-              key={cat}
-              label={cat}
-              clickable
-              variant={selectedCategory === cat ? "filled" : "outlined"}
-              color={selectedCategory === cat ? "primary" : "default"}
-              onClick={() => handleCategoryChange(cat)}
-            />
-          ))}
-        </Box>
+        {/* Mobile category chips */}
+        {isMobile && (
+          <Box sx={{ display: "flex", gap: 1, overflowX: "auto", py: 2, px: 1 }}>
+            {categories.map((cat) => (
+              <Chip
+                key={cat}
+                label={cat}
+                clickable
+                variant={selectedCategory === cat ? "filled" : "outlined"}
+                color={selectedCategory === cat ? "primary" : "default"}
+                onClick={() => handleCategoryChange(cat)}
+              />
+            ))}
+          </Box>
+        )}
 
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', gap: 3 }}> {/* Changed to flex layout */}
+          {/* Desktop Sidebar */}
           {!isMobile && (
-            <Grid item xs={12} md={3}>
+            <Box sx={{ flexShrink: 0 }}> {/* Prevent shrinking */}
               <FilterSidebar />
-            </Grid>
+            </Box>
           )}
 
-          <Grid item xs={12} md={9}>
+          {/* Main Content */}
+          <Box sx={{ flex: 1, minWidth: 0 }}> {/* Allow flex grow and prevent overflow */}
+            {/* Desktop category chips */}
+            {!isMobile && (
+              <Box sx={{ display: "flex", gap: 1, overflowX: "auto", py: 2, mb: 2 }}>
+                {categories.map((cat) => (
+                  <Chip
+                    key={cat}
+                    label={cat}
+                    clickable
+                    variant={selectedCategory === cat ? "filled" : "outlined"}
+                    color={selectedCategory === cat ? "primary" : "default"}
+                    onClick={() => handleCategoryChange(cat)}
+                  />
+                ))}
+              </Box>
+            )}
+
             <Box
               sx={{
                 display: "flex",
@@ -330,72 +365,143 @@ const RentalShopPage = () => {
             />
 
             {currentProducts.length > 0 ? (
-              <Grid container spacing={3}>
+              <Box 
+                sx={{ 
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: 2,
+                  '@media (max-width: 1200px)': {
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                  },
+                  '@media (max-width: 900px)': {
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                  },
+                  '@media (max-width: 600px)': {
+                    gridTemplateColumns: '1fr',
+                  }
+                }}
+              >
                 {currentProducts.map((product) => (
-                  <Grid
+                  <Card
                     key={product._id}
-                    item
-                    xs={6}
-                    sm={4}
-                    md={4}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '320px', // Reduced from 400px
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      cursor: 'pointer',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      },
+                    }}
+                    onClick={() => navigate(`/product-page/${product._id}`)}
                   >
-                    <Card
-                      sx={{
-                        display: 'block',
-                        height: '100%',
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: 3,
-                        },
-                      }}
-                      onClick={() => navigate(`/product-page/${product._id}`)}
-                    >
+                    <Box sx={{ 
+                      height: '160px', // Reduced from 220px
+                      overflow: 'hidden',
+                      backgroundColor: '#f5f5f5'
+                    }}>
                       <CardMedia
                         component="img"
-                        height="180"
-                        image={product.imageUrl || "https://via.placeholder.com/300"}
+                        image={product.imageUrl || "https://via.placeholder.com/300x160/f0f0f0/666666?text=No+Image"}
                         alt={product.name}
-                        sx={{ objectFit: "cover" }}
+                        sx={{ 
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center'
+                        }}
                       />
-                      <Box sx={{ flexGrow: 1 }}>
-                        <CardContent>
-                          <Typography variant="subtitle1" fontWeight="bold">
-                            {product.name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            {product.category}
-                          </Typography>
-                          <Typography variant="h6" color="primary">
-                            ₹{product.pricePerDay.toFixed(2)} / day
-                          </Typography>
-                          {product.originalPrice && (
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ textDecoration: "line-through" }}
-                            >
-                              ₹{product.originalPrice.toFixed(2)}
-                            </Typography>
-                          )}
-                        </CardContent>
-                        <CardActions sx={{ justifyContent: "space-between" }}>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            onClick={(e) => e.stopPropagation()}
+                    </Box>
+                    
+                    <CardContent sx={{ 
+                      flexGrow: 1, 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      p: 1.5, // Reduced padding
+                      minHeight: '100px' // Reduced from 120px
+                    }}>
+                      <Typography 
+                        variant="subtitle2" // Changed from subtitle1
+                        fontWeight="bold" 
+                        sx={{ 
+                          mb: 0.5, // Reduced margin
+                          minHeight: '20px', // Reduced from 24px
+                          overflow: 'hidden',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          lineHeight: 1.2,
+                          fontSize: '0.9rem' // Slightly smaller font
+                        }}
+                      >
+                        {product.name}
+                      </Typography>
+                      
+                      <Typography 
+                        variant="caption" // Changed from body2
+                        color="text.secondary" 
+                        sx={{ mb: 1 }}
+                      >
+                        {product.category}
+                      </Typography>
+                      
+                      <Box sx={{ mt: 'auto' }}>
+                        <Typography variant="h6" color="primary" fontWeight="bold" sx={{ fontSize: '1.1rem' }}>
+                          ₹{product.pricePerDay?.toFixed(2) || '0.00'} / day
+                        </Typography>
+                        {product.originalPrice && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ textDecoration: "line-through" }}
                           >
-                            Rent Now
-                          </Button>
-                          <IconButton onClick={(e) => e.stopPropagation()}>
-                            <FavoriteBorder />
-                          </IconButton>
-                        </CardActions>
+                            ₹{product.originalPrice.toFixed(2)}
+                          </Typography>
+                        )}
                       </Box>
-                    </Card>
-                  </Grid>
+                    </CardContent>
+                    
+                    <CardActions sx={{ 
+                      justifyContent: "space-between", 
+                      p: 1.5, // Reduced padding
+                      pt: 0
+                    }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={(e) => e.stopPropagation()}
+                        sx={{
+                          minWidth: 80, // Reduced from 100
+                          textTransform: 'none',
+                          fontWeight: 'bold',
+                          fontSize: '0.75rem' // Smaller button text
+                        }}
+                      >
+                        Rent Now
+                      </Button>
+                      <IconButton 
+                        size="small" // Made icon button smaller
+                        onClick={(e) => e.stopPropagation()}
+                        sx={{
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          '&:hover': {
+                            borderColor: 'primary.main',
+                            backgroundColor: 'primary.light',
+                            color: 'primary.main'
+                          }
+                        }}
+                      >
+                        <FavoriteBorder fontSize="small" />
+                      </IconButton>
+                    </CardActions>
+                  </Card>
                 ))}
-              </Grid>
+              </Box>
             ) : (
               <Box
                 sx={{
@@ -424,8 +530,8 @@ const RentalShopPage = () => {
                 />
               </Box>
             )}
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
 
       <Drawer

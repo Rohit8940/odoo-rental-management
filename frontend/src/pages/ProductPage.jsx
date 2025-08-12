@@ -44,13 +44,13 @@ const ProductPage = () => {
       product: product._id,
       quantity,
       rentStart: fromDate,
-      rentEnd: toDate,
+      rentEnd: toDate,  
       pricePerUnit,
       appliedCoupon: coupon ? { code: coupon, discount: 0, discountType: "fixed" } : null,
     };
 
     const token = localStorage.getItem("token"); // or however you store auth token
-
+    console.log("Received token:", token);
     const response = await axios.post(
       "http://localhost:5000/api/cart/add",
       payload,

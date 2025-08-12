@@ -9,24 +9,39 @@ import ProductPage from "./pages/ProductPage";
 import ReviewOrder from "./pages/ReviewOrder";
 import DeliveryPage from "./pages/DeliveryPage";
 import PaymentPage from "./pages/PaymentPage";
+import Dashboard from "./userPages/Dashboard";
+import RentalOrderFormView from "./userPages/RentalOrderFormView";
 
 export default function App() {
-  const { user,loading } = useAuth();
-  console.log(user);
+  const { user, loading } = useAuth();
+
   if (loading) {
-    return <div>Loading...</div>; // Or your loading spinner
+    return <div>Loading...</div>; // Loading spinner or skeleton
   }
+
   return (
     <Routes>
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      
+      {/* Default route decision based on role */}
+      <Route
+        path="/"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : user.role === "customer" ? (
+            <Navigate to="/rental-shop" replace />
+          ) : user.role === "enduser" ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
 
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
 
-      {/* Protected route */}
+      {/* Customer protected routes */}
       <Route
         path="/rental-shop"
         element={
@@ -51,7 +66,7 @@ export default function App() {
         path="/product-page/:id"
         element={
           user?.role === "customer" ? (
-            <ProductPage/>
+            <ProductPage />
           ) : (
             <Navigate to="/login" replace />
           )
@@ -61,7 +76,7 @@ export default function App() {
         path="/review-order"
         element={
           user?.role === "customer" ? (
-            <ReviewOrder/>
+            <ReviewOrder />
           ) : (
             <Navigate to="/login" replace />
           )
@@ -71,7 +86,7 @@ export default function App() {
         path="/delivery"
         element={
           user?.role === "customer" ? (
-            <DeliveryPage/>
+            <DeliveryPage />
           ) : (
             <Navigate to="/login" replace />
           )
@@ -81,7 +96,29 @@ export default function App() {
         path="/payment"
         element={
           user?.role === "customer" ? (
-            <PaymentPage/>
+            <PaymentPage />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+      {/* End user protected route */}
+      <Route
+        path="/dashboard"
+        element={
+          user?.role === "enduser" ? (
+            <Dashboard />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/rental-order-form/:id"
+        element={
+          user?.role === "enduser" ? (
+            <RentalOrderFormView/>
           ) : (
             <Navigate to="/login" replace />
           )

@@ -1,141 +1,273 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import {jwtDecode} from "jwt-decode";
+import axios from "axios";
 import {
   Box,
-  Typography,
-  TextField,
-  MenuItem,
   Button,
-  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Typography,
   Paper,
+  Grid,
 } from "@mui/material";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-const productsList = [
-  { id: 1, name: "Camera", pricePerDay: 50 },
-  { id: 2, name: "Tripod", pricePerDay: 30 },
-  { id: 3, name: "Lighting Kit", pricePerDay: 40 },
-];
+// Helper function to get user ID from JWT token
+function getUserIdFromToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const decoded = jwtDecode(token);
+    return decoded.id || decoded._id || null;
+  } catch (e) {
+    console.error("Invalid token", e);
+    return null;
+  }
+}
 
-export default function RentalOrderFormView() {
-  const [products, setProducts] = useState(
-    productsList.map((p) => ({ ...p, quantity: 0 }))
-  );
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [rentalDays, setRentalDays] = useState(0);
-  const [totalPrice, setTotalPrice] = useState(0);
+export default function UserProducts() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (startDate && endDate) {
-      const diffTime = endDate.getTime() - startDate.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      setRentalDays(diffDays > 0 ? diffDays : 0);
-    } else {
-      setRentalDays(0);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    category: "",
+    imageUrl: "",
+    pricePerDay: "",
+    pricePerUnit: "",
+    totalPrice: "",
+    availableFrom: "",
+    availableTo: "",
+    terms: "",
+  });
+
+  // Fetch products for this user
+  const fetchProducts = async () => {
+    const userId = getUserIdFromToken();
+    if (!userId) {
+      setProducts([]);
+      setLoading(false);
+      return;
     }
-  }, [startDate, endDate]);
-
-  useEffect(() => {
-    let total = 0;
-    products.forEach(({ pricePerDay, quantity }) => {
-      total += pricePerDay * quantity * rentalDays;
-    });
-    setTotalPrice(total);
-  }, [products, rentalDays]);
-
-  const handleQuantityChange = (id, qty) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, quantity: qty } : p))
-    );
+    setLoading(true);
+    try {
+      const res = await axios.get(`http://localhost:5000/api/products/owner/${userId}`);
+      setProducts(res.data);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setProducts([]);
+    }
+    setLoading(false);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Validate & send data to backend
-    alert(`Order submitted! Total: $${totalPrice}`);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Handle form input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Submit new product
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.pricePerDay) {
+      alert("Name and Price Per Day are required");
+      return;
+    }
+
+    try {
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        alert("User not authenticated");
+        return;
+      }
+
+      const payload = {
+        ...formData,
+        pricePerDay: Number(formData.pricePerDay),
+        pricePerUnit: formData.pricePerUnit ? Number(formData.pricePerUnit) : undefined,
+        totalPrice: formData.totalPrice ? Number(formData.totalPrice) : undefined,
+        availableFrom: formData.availableFrom ? new Date(formData.availableFrom) : undefined,
+        availableTo: formData.availableTo ? new Date(formData.availableTo) : undefined,
+        owner: userId,
+        available: true,
+        createdAt: new Date(),
+      };
+
+      await axios.post("http://localhost:5000/api/products", payload);
+
+      // Reset form & close modal
+      setFormData({
+        name: "",
+        description: "",
+        category: "",
+        imageUrl: "",
+        pricePerDay: "",
+        pricePerUnit: "",
+        totalPrice: "",
+        availableFrom: "",
+        availableTo: "",
+        terms: "",
+      });
+      setOpenCreateModal(false);
+      fetchProducts();
+    } catch (err) {
+      console.error("Error creating product:", err);
+      alert("Failed to create product. See console.");
+    }
   };
 
   return (
-    <Box maxWidth={700} mx="auto" p={3}>
+    <Box p={3}>
       <Typography variant="h4" gutterBottom>
-        Rental Order Form
+        Your Products
       </Typography>
 
-      <form onSubmit={handleSubmit}>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <Grid container spacing={3}>
-            {/* Date pickers */}
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Rental Start Date"
-                value={startDate}
-                onChange={(newValue) => setStartDate(newValue)}
-                renderInput={(params) => (
-                  <TextField {...params} fullWidth required />
-                )}
-              />
-            </Grid>
+      <Button variant="contained" onClick={() => setOpenCreateModal(true)} sx={{ mb: 3 }}>
+        Create New Product
+      </Button>
 
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Rental End Date"
-                value={endDate}
-                onChange={(newValue) => setEndDate(newValue)}
-                renderInput={(params) => (
-                  <TextField {...params} fullWidth required />
-                )}
-                minDate={startDate || undefined}
-              />
-            </Grid>
-
-            {/* Product quantity inputs */}
-            {products.map(({ id, name, pricePerDay, quantity }) => (
-              <Grid item xs={12} sm={6} key={id}>
-                <Paper variant="outlined" sx={{ p: 2 }}>
-                  <Typography variant="h6">{name}</Typography>
-                  <Typography variant="body2" color="textSecondary" gutterBottom>
-                    Price per day: ${pricePerDay}
-                  </Typography>
-                  <TextField
-                    label="Quantity"
-                    type="number"
-                    inputProps={{ min: 0 }}
-                    value={quantity}
-                    onChange={(e) =>
-                      handleQuantityChange(id, Math.max(0, +e.target.value))
-                    }
-                    fullWidth
-                    required={quantity > 0}
+      {loading ? (
+        <Typography>Loading products...</Typography>
+      ) : products.length === 0 ? (
+        <Typography>No products found for your account.</Typography>
+      ) : (
+        <Grid container spacing={2}>
+          {products.map((p) => (
+            <Grid item xs={12} sm={6} md={4} key={p._id}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6">{p.name}</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Category: {p.category || "N/A"}
+                </Typography>
+                {p.imageUrl && (
+                  <Box
+                    component="img"
+                    src={p.imageUrl}
+                    alt={p.name}
+                    sx={{ width: "100%", maxHeight: 150, objectFit: "cover", my: 1 }}
                   />
-                </Paper>
-              </Grid>
-            ))}
-
-            {/* Summary */}
-            <Grid item xs={12}>
-              <Typography variant="h6">
-                Rental Days: {rentalDays > 0 ? rentalDays : "--"}
-              </Typography>
-              <Typography variant="h5" mt={1}>
-                Total Price: ${totalPrice.toFixed(2)}
-              </Typography>
+                )}
+                <Typography>Price Per Day: ₹{p.pricePerDay}</Typography>
+                <Typography>Description: {p.description || "No description"}</Typography>
+                <Typography>Available: {p.available ? "Yes" : "No"}</Typography>
+                <Typography>Terms: {p.terms || "N/A"}</Typography>
+              </Paper>
             </Grid>
+          ))}
+        </Grid>
+      )}
 
-            {/* Submit */}
-            <Grid item xs={12}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={rentalDays === 0 || totalPrice === 0}
-              >
-                Submit Order
-              </Button>
-            </Grid>
-          </Grid>
-        </LocalizationProvider>
-      </form>
+      {/* Create Product Modal */}
+      <Dialog open={openCreateModal} onClose={() => setOpenCreateModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create New Product</DialogTitle>
+        <DialogContent dividers>
+          <TextField
+            label="Name *"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Description"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            multiline
+            rows={3}
+          />
+          <TextField
+            label="Category"
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Image URL"
+            name="imageUrl"
+            value={formData.imageUrl}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Price Per Day *"
+            name="pricePerDay"
+            type="number"
+            value={formData.pricePerDay}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Price Per Unit"
+            name="pricePerUnit"
+            type="number"
+            value={formData.pricePerUnit}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Total Price"
+            name="totalPrice"
+            type="number"
+            value={formData.totalPrice}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Available From"
+            name="availableFrom"
+            type="date"
+            value={formData.availableFrom}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Available To"
+            name="availableTo"
+            type="date"
+            value={formData.availableTo}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Terms & Conditions"
+            name="terms"
+            value={formData.terms}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            multiline
+            rows={2}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCreateModal(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleSubmit}>
+            Create Product
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
